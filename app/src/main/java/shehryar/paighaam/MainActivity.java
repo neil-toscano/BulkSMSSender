@@ -248,12 +248,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     void sendIt() {
-        try {
-
-            SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(nmbers.get(i), null, smsMessageET.getText().toString(), sentPI, null);
-        } catch (Exception e) {
-            Toast.makeText(getApplicationContext(), "failed to " + nmbers.get(i), Toast.LENGTH_LONG).show();
+    try {
+        SmsManager smsManager = SmsManager.getDefault();
+        String message = smsMessageET.getText().toString();
+        
+        // Dividir el mensaje en partes de 160 caracteres
+        ArrayList<String> parts = smsManager.divideMessage(message);
+        ArrayList<PendingIntent> sentIntents = new ArrayList<>();
+        
+        for (int j = 0; j < parts.size(); j++) {
+            sentIntents.add(sentPI);
         }
+        
+        // Enviar mensaje dividido
+        smsManager.sendMultipartTextMessage(nmbers.get(i), null, parts, sentIntents, null);
+        
+    } catch (Exception e) {
+        Toast.makeText(getApplicationContext(), "failed to " + nmbers.get(i), Toast.LENGTH_LONG).show();
     }
+}
 }
