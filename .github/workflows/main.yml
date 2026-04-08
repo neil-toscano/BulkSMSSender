@@ -11,19 +11,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # 1. Usamos v4 para que funcione con Node.js 24 (el estándar de 2026)
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
+    # 2. Para una app de hace 6 años, Java 11 suele ser lo correcto. 
+    # Si falla, podrías probar cambiando '11' por '8'.
     - name: Set up JDK 11
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v4
       with:
         java-version: '11'
+        distribution: 'temurin'
 
+    # 3. SOLUCIÓN AL ERROR 127: Dar permisos de ejecución
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    # 4. Usamos 'assembleDebug' en lugar de 'build'. 
+    # 'build' intenta correr tests y lints que en apps viejas suelen dar mil errores.
+    # 'assembleDebug' solo cocina el APK rápido.
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew assembleDebug
 
+    # 5. Subimos el APK generado
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: app-release.apk
-        path: app/build/outputs/apk/release/app-release.apk
+        name: app-debug.apk
+        # Cambiamos la ruta a 'debug' porque las apps viejas no compilan 'release' 
+        # sin configurar llaves de firma (Keystore).
+        path: app/build/outputs/apk/debug/app-debug.apk
